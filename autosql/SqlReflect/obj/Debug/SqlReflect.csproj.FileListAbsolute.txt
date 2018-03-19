@@ -1,0 +1,5 @@
+C:\Users\Marco\Desktop\AVE\autosql\SqlReflect\bin\Debug\SqlReflect.dll
+C:\Users\Marco\Desktop\AVE\autosql\SqlReflect\bin\Debug\SqlReflect.pdb
+C:\Users\Marco\Desktop\AVE\autosql\SqlReflect\obj\Debug\SqlReflect.csproj.CoreCompileInputs.cache
+C:\Users\Marco\Desktop\AVE\autosql\SqlReflect\obj\Debug\SqlReflect.dll
+C:\Users\Marco\Desktop\AVE\autosql\SqlReflect\obj\Debug\SqlReflect.pdb
