@@ -13,7 +13,7 @@ namespace SqlReflectTest.DataMappers
         const string SQL_GET_BY_ID = SQL_GET_ALL + " WHERE ShipperID=";
         const string SQL_INSERT = "INSERT INTO Shippers (" + COLUMNS + ") OUTPUT INSERTED.ShipperID VALUES ";
         const string SQL_DELETE = "DELETE FROM Shippers WHERE ShipperID = ";
-        const string SQL_UPDATE = "UPDATE Shippers SET CompanyName={1}, Phone={2} WHERE ShiperID = {0}";
+        const string SQL_UPDATE = "UPDATE Shippers SET CompanyName={1}, Phone={2} WHERE ShipperID = {0}";
 
         public ShipperDataMapper(string connStr) : base(connStr)
         {
