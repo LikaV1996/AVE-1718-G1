@@ -12,8 +12,8 @@ namespace SqlReflectTest
                     Server=(LocalDB)\MSSQLLocalDB;
                     Integrated Security=true;
                     AttachDbFileName=" +
-                       Environment.CurrentDirectory +
-                       "\\data\\NORTHWND.MDF";
+                        Environment.CurrentDirectory +
+                        "\\data\\NORTHWND.MDF";
 
         readonly IDataMapper shippers;
 

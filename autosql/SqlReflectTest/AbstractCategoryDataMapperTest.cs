@@ -76,14 +76,27 @@ namespace SqlReflectTest
                 CategoryName = "Mushrooms",
                 Description = "Agaricus bisporus"
             };
+            /*  //Just in case DataBase goes Bananas
+            modified = new Category()
+            {
+                CategoryID = original.CategoryID,
+                CategoryName = "Confections",
+                Description = "Desserts, candies, and sweet breads"
+            };
+            */
             categories.Update(modified);
             Category actual = (Category)categories.GetById(3);
             Assert.AreEqual(modified.CategoryName, actual.CategoryName);
             Assert.AreEqual(modified.Description, actual.Description);
+
             categories.Update(original);
             actual = (Category)categories.GetById(3);
+            Assert.AreEqual(original.CategoryName, actual.CategoryName);
+            Assert.AreEqual(original.Description, actual.Description);
+            /*
             Assert.AreEqual("Confections", actual.CategoryName);
             Assert.AreEqual("Desserts, candies, and sweet breads", actual.Description);
+            */
         }
     }
 }
