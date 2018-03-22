@@ -63,16 +63,21 @@ namespace SqlReflect
             Object obj = Activator.CreateInstance(klass);
             PropertyInfo[] PIarr = klass.GetProperties();
 
-            foreach(PropertyInfo p in PIarr)
+            foreach(PropertyInfo pi in PIarr)
             {
-                if (p.PropertyType.IsPrimitive || p.PropertyType == typeof(string))
-                    p.SetValue(obj, dr[p.Name] is DBNull ? "NULL" : dr[p.Name]);
+                if (pi.PropertyType.IsPrimitive || pi.PropertyType == typeof(string))
+                    pi.SetValue(obj, dr[pi.Name] is DBNull ? "NULL" : dr[pi.Name]);
                 else
                 {
-                    object o = Activator.CreateInstance(p.PropertyType);
-                    IDataMapper dm = new ReflectDataMapper(p.PropertyType,connStr);
+                    object o = Activator.CreateInstance(pi.PropertyType);
+                    IDataMapper dm = new ReflectDataMapper(pi.PropertyType,connStr);
                     
-                    p.SetValue(obj, dm.GetById(dr[p.Name+"ID"]));
+                    PropertyInfo[] objPI = pi.PropertyType.GetProperties();
+                    foreach(PropertyInfo p in objPI){
+                        if (p.GetCustomAttribute(typeof(PKAttribute)) != null)
+                            pi.SetValue(obj, dm.GetById(dr[p.Name]));
+                    }
+                    
                 }
             }
             return obj;
@@ -95,17 +100,19 @@ namespace SqlReflect
             string values = "";
             for(int i = 0; i < pi.Length; i++)
             {
-                //string val = pi[i].GetValue(target).ToString();
+                string val = pi[i].GetValue(target).ToString();
                 object value = null;
                 if (pi[i].PropertyType.IsPrimitive || pi[i].PropertyType == typeof(string))
                     value = pi[i].GetValue(target);
                 else
                 {
-                    PropertyInfo[] objPI = pi[i].GetType().GetProperties();
-                    foreach(PropertyInfo p in objPI)
+                    object obj = pi[i].GetValue(target);
+                    PropertyInfo[] objPI = pi[i].PropertyType.GetProperties();
+                    foreach (PropertyInfo p in objPI)
                     {
-                        if(p.Name.Equals(objPI.GetType().Name + "ID")){
-                            value = p.GetValue(p);
+                        if(p.GetCustomAttribute(typeof(PKAttribute)) != null)
+                        {
+                            value = p.GetValue(obj);
                             break;
                         }
                     }
@@ -117,11 +124,11 @@ namespace SqlReflect
             return SQL_INSERT + "(" + values + ")";
         }
 
-        protected override string SqlDelete(object target)
+        protected override string SqlDelete(object target)  //unnecessary check for PKvalue to be object?
         {
             PropertyInfo[] pi = target.GetType().GetProperties();
 
-            string PKvalue = "";
+            object PKvalue = "";
             for (int i = 0; i < pi.Length; i++)
             {
                 if (pi[i].Name.Equals(PRIMARY_KEY))
@@ -130,6 +137,8 @@ namespace SqlReflect
                     break;
                 }
             }
+
+
 
             return SQL_DELETE + PKvalue;
         }
