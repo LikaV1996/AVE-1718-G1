@@ -18,11 +18,13 @@ namespace SqlReflect
         string SQL_INSERT = "";
         string SQL_DELETE = "";
         string SQL_UPDATE = "";
-        
+
+        string connStr;
 
         public ReflectDataMapper(Type klass, string connStr) : base(connStr)
         {
             this.klass = klass;
+            this.connStr = connStr;
             
             PropertyInfo[] pi = klass.GetProperties();
 
@@ -34,7 +36,9 @@ namespace SqlReflect
             string[] columns_arr = new string[pi.Length - 1];
             for(int i = 0; i < pi.Length; i++)
             {
-                string col = pi[i].Name;
+                string col = ( pi[i].PropertyType.IsPrimitive || pi[i].PropertyType == typeof(string) ) ? 
+                    pi[i].Name : (pi[i].Name + "ID");
+
                 if (col.Equals(klass.Name + "ID"))
                     PRIMARY_KEY = col;
                 else
@@ -61,7 +65,15 @@ namespace SqlReflect
 
             foreach(PropertyInfo p in PIarr)
             {
-                p.SetValue(obj, dr[p.Name]);
+                if (p.PropertyType.IsPrimitive || p.PropertyType == typeof(string))
+                    p.SetValue(obj, dr[p.Name] is DBNull ? "NULL" : dr[p.Name]);
+                else
+                {
+                    object o = Activator.CreateInstance(p.PropertyType);
+                    IDataMapper dm = new ReflectDataMapper(p.PropertyType,connStr);
+                    
+                    p.SetValue(obj, dm.GetById(dr[p.Name+"ID"]));
+                }
             }
             return obj;
         }
@@ -83,9 +95,24 @@ namespace SqlReflect
             string values = "";
             for(int i = 0; i < pi.Length; i++)
             {
-                string val = pi[i].GetValue(target).ToString();
-                if(!pi[i].Name.Equals(PRIMARY_KEY))
-                    values += " '" + pi[i].GetValue(target) + "' " + ((i < pi.Length - 1) ? ", " : "");
+                //string val = pi[i].GetValue(target).ToString();
+                object value = null;
+                if (pi[i].PropertyType.IsPrimitive || pi[i].PropertyType == typeof(string))
+                    value = pi[i].GetValue(target);
+                else
+                {
+                    PropertyInfo[] objPI = pi[i].GetType().GetProperties();
+                    foreach(PropertyInfo p in objPI)
+                    {
+                        if(p.Name.Equals(objPI.GetType().Name + "ID")){
+                            value = p.GetValue(p);
+                            break;
+                        }
+                    }
+                }
+
+                if (!pi[i].Name.Equals(PRIMARY_KEY))
+                    values += " '" + value + "' " + ((i < pi.Length - 1) ? ", " : "");
             }
             return SQL_INSERT + "(" + values + ")";
         }
