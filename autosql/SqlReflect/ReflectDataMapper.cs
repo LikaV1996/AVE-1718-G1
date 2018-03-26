@@ -11,13 +11,13 @@ namespace SqlReflect
     {
         Type klass;
 
-        string TABLE_NAME = "";
-        string PRIMARY_KEY = "";
-        string SQL_GET_ALL = "";
-        string SQL_GET_BY_ID = "";
-        string SQL_INSERT = "";
-        string SQL_DELETE = "";
-        string SQL_UPDATE = "";
+        readonly string TABLE_NAME;
+        readonly string PRIMARY_KEY;
+        readonly string SQL_GET_ALL;
+        readonly string SQL_GET_BY_ID;
+        readonly string SQL_INSERT;
+        readonly string SQL_DELETE;
+        readonly string SQL_UPDATE;
 
         string connStr;
 
@@ -28,26 +28,25 @@ namespace SqlReflect
             
             PropertyInfo[] pi = klass.GetProperties();
 
-            Attribute att = klass.GetCustomAttribute(typeof(TableAttribute));
-            TABLE_NAME = att.GetType().GetProperty("Name").GetValue(att).ToString();
-
-            PRIMARY_KEY = "";
+            Attribute tableAtt = klass.GetCustomAttribute(typeof(TableAttribute));
+            TABLE_NAME = tableAtt.GetType().GetProperty("Name").GetValue(tableAtt).ToString();
+            
             string COLUMNS = "";
-            string[] columns_arr = new string[pi.Length - 1];
-            for(int i = 0; i < pi.Length; i++)
-            {
-                string col = ( pi[i].PropertyType.IsPrimitive || pi[i].PropertyType == typeof(string) ) ? 
-                    pi[i].Name : (pi[i].Name + "ID");
 
-                if (col.Equals(klass.Name + "ID"))
-                    PRIMARY_KEY = col;
+            foreach (PropertyInfo p in pi)
+            {
+                string col = p.Name + 
+                    ( (p.PropertyType.IsPrimitive || p.PropertyType == typeof(string)) ? "" : "ID" );
+
+                Attribute pkAtt = p.GetCustomAttribute(typeof(PKAttribute));
+
+                if (pkAtt != null)
+                    PRIMARY_KEY = p.Name;
                 else
-                {
-                    columns_arr[i-1] = col;
-                    COLUMNS += col;
-                    if (i < pi.Length - 1) COLUMNS += ", ";
-                }
+                    COLUMNS += col + ", ";
             }
+            
+            COLUMNS = COLUMNS.Remove(COLUMNS.Length - 2);
             
             SQL_GET_ALL = "SELECT " + PRIMARY_KEY + ", " + COLUMNS + " FROM " + TABLE_NAME;
             SQL_GET_BY_ID = SQL_GET_ALL + " WHERE " + PRIMARY_KEY + " = ";
@@ -61,6 +60,7 @@ namespace SqlReflect
         protected override object Load(SqlDataReader dr)
         {
             Object obj = Activator.CreateInstance(klass);
+
             PropertyInfo[] PIarr = klass.GetProperties();
 
             foreach(PropertyInfo pi in PIarr)
@@ -69,10 +69,9 @@ namespace SqlReflect
                     pi.SetValue(obj, dr[pi.Name] is DBNull ? "NULL" : dr[pi.Name]);
                 else
                 {
-                    object o = Activator.CreateInstance(pi.PropertyType);
                     IDataMapper dm = new ReflectDataMapper(pi.PropertyType,connStr);
-                    
                     PropertyInfo[] objPI = pi.PropertyType.GetProperties();
+
                     foreach(PropertyInfo p in objPI){
                         if (p.GetCustomAttribute(typeof(PKAttribute)) != null)
                             pi.SetValue(obj, dm.GetById(dr[p.Name]));
@@ -98,19 +97,20 @@ namespace SqlReflect
             PropertyInfo[] pi = target.GetType().GetProperties();
 
             string values = "";
-            for(int i = 0; i < pi.Length; i++)
+            for (int i = 0; i < pi.Length; i++)
             {
-                string val = pi[i].GetValue(target).ToString();
                 object value = null;
+
                 if (pi[i].PropertyType.IsPrimitive || pi[i].PropertyType == typeof(string))
                     value = pi[i].GetValue(target);
                 else
                 {
                     object obj = pi[i].GetValue(target);
+
                     PropertyInfo[] objPI = pi[i].PropertyType.GetProperties();
                     foreach (PropertyInfo p in objPI)
                     {
-                        if(p.GetCustomAttribute(typeof(PKAttribute)) != null)
+                        if (p.GetCustomAttribute(typeof(PKAttribute)) != null)
                         {
                             value = p.GetValue(obj);
                             break;
@@ -119,27 +119,25 @@ namespace SqlReflect
                 }
 
                 if (!pi[i].Name.Equals(PRIMARY_KEY))
-                    values += " '" + value + "' " + ((i < pi.Length - 1) ? ", " : "");
+                    values += "'" + value + "', ";
             }
-            return SQL_INSERT + "(" + values + ")";
+            return SQL_INSERT + "(" + values.Remove(values.Length -2) + ")";
         }
 
-        protected override string SqlDelete(object target)  //unnecessary check for PKvalue to be object?
+        protected override string SqlDelete(object target)
         {
             PropertyInfo[] pi = target.GetType().GetProperties();
 
-            object PKvalue = "";
-            for (int i = 0; i < pi.Length; i++)
+            string PKvalue = "";
+            foreach (PropertyInfo p in pi)
             {
-                if (pi[i].Name.Equals(PRIMARY_KEY))
+                if (p.Name.Equals(PRIMARY_KEY))
                 {
-                    PKvalue = pi[i].GetValue(target).ToString();
+                    PKvalue = p.GetValue(target).ToString();
                     break;
                 }
             }
-
-
-
+            
             return SQL_DELETE + PKvalue;
         }
 
@@ -161,24 +159,11 @@ namespace SqlReflect
                 }
                 else
                 {
-                    SETvalues += colName + "= '" + colValue + "'";
-                    SETvalues += i < pi.Length - 1 ? ", " : "";
+                    SETvalues += colName + "= '" + colValue + "', ";
                 }
             }
-            return SQL_UPDATE + SETvalues + " WHERE " + PRIMARY_KEY + " = " + PKvalue;
+            return SQL_UPDATE + SETvalues.Remove(SETvalues.Length -2) + " WHERE " + PRIMARY_KEY + " = " + PKvalue;
         }
     }
-
-/*
-UPDATE Categories SET CategoryName='Beverages', Description='Soft drinks, coffees, teas, beers, and ales' WHERE CategoryID = 1
-UPDATE Categories SET CategoryName='Condiments', Description='Sweet and savory sauces, relishes, spreads, and seasonings' WHERE CategoryID = 2
-UPDATE Categories SET CategoryName='Confections', Description='Desserts, candies, and sweet breads' WHERE CategoryID = 3
-UPDATE Categories SET CategoryName='Dairy Products', Description='Cheeses' WHERE CategoryID = 4
-UPDATE Categories SET CategoryName='Grains/Cereals', Description='Breads, crackers, pasta, and cereal' WHERE CategoryID = 5
-UPDATE Categories SET CategoryName='Meat/Poultry', Description='Prepared meats' WHERE CategoryID = 6
-UPDATE Categories SET CategoryName='Produce	Dried', Description='Dried fruit and bean curd' WHERE CategoryID = 7
-UPDATE Categories SET CategoryName='Seafood', Description='Seaweed and fish' WHERE CategoryID = 8
-UPDATE Categories SET CategoryName='Cookies', Description='Digestive' WHERE CategoryID = 34
-*/
 
 }
