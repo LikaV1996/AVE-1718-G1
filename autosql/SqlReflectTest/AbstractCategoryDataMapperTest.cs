@@ -36,6 +36,7 @@ namespace SqlReflectTest
         public void TestCategoryGetById()
         {
             Category c = (Category)categories.GetById(3);
+            
             Assert.AreEqual("Confections", c.CategoryName);
             Assert.AreEqual("Desserts, candies, and sweet breads", c.Description);
         }

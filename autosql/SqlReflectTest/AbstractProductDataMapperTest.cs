@@ -39,6 +39,7 @@ namespace SqlReflectTest
             }
             Assert.AreEqual(77, count);
         }
+
         public void TestProductGetById()
         {
             Product p = (Product)prods.GetById(10);

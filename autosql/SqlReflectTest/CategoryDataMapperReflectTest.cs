@@ -21,15 +21,14 @@ namespace SqlReflectTest
         public void TestCategoryGetByIdReflect() {
             base.TestCategoryGetById();
         }
+
         [TestMethod]
-        public void TestCategoryInsertAndDeleteReflect()
-        {
+        public void TestCategoryInsertAndDeleteReflect() {
             base.TestCategoryInsertAndDelete();
         }
 
         [TestMethod]
-        public void TestCategoryUpdateReflect()
-        {
+        public void TestCategoryUpdateReflect() {
             base.TestCategoryUpdate();
         }
     }

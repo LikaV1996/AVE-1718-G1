@@ -37,6 +37,7 @@ namespace SqlReflectTest
         public void TestShipperGetById()
         {
             Shipper c = (Shipper)shippers.GetById(3);
+            
             Assert.AreEqual("Federal Shipping", c.CompanyName);
             Assert.AreEqual("(503) 555-9931", c.Phone);
         }

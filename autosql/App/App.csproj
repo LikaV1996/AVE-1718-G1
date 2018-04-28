@@ -84,5 +84,15 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SqlReflectTest\SqlReflectTest.csproj">
+      <Project>{87B74656-D799-43E2-9C29-B932FA5C5182}</Project>
+      <Name>SqlReflectTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqlReflect\SqlReflect.csproj">
+      <Project>{CE1738B3-AF2D-4E26-9312-2C8E2CE03B6E}</Project>
+      <Name>SqlReflect</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

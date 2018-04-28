@@ -1,5 +1,6 @@
 ﻿using SqlReflect.Attributes;
 using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -21,7 +22,12 @@ namespace SqlReflect
 
         string connStr;
 
-        public ReflectDataMapper(Type klass, string connStr) : base(connStr)
+        public ReflectDataMapper(Type klass, string connStr, bool withCache) : base(connStr, withCache)
+            //: this(klass,connStr)     //for now
+        {
+        }
+
+        public ReflectDataMapper(Type klass, string connStr) : base(connStr,false)
         {
             this.klass = klass;
             this.connStr = connStr;
@@ -57,7 +63,7 @@ namespace SqlReflect
             
         }
 
-        protected override object Load(SqlDataReader dr)
+        protected override object Load(IDataReader dr)
         {
             Object obj = Activator.CreateInstance(klass);
 

@@ -1,7 +1,7 @@
 ﻿using SqlReflect;
 using SqlReflectTest.Model;
 using System;
-using System.Data.SqlClient;
+using System.Data;
 
 namespace SqlReflectTest.DataMappers
 {
@@ -19,7 +19,7 @@ namespace SqlReflectTest.DataMappers
         {
         }
 
-        protected override object Load(SqlDataReader dr)
+        protected override object Load(IDataReader dr)
         {
             Shipper c = new Shipper();
             c.ShipperID = (int)dr["ShipperID"];

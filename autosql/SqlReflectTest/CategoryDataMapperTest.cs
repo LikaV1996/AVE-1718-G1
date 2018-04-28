@@ -21,10 +21,8 @@ namespace SqlReflectTest
             base.TestCategoryGetById();
         }
 
-
         [TestMethod]
-        public new void TestCategoryInsertAndDelete()
-        {
+        public new void TestCategoryInsertAndDelete() {
             base.TestCategoryInsertAndDelete();
         }
 
