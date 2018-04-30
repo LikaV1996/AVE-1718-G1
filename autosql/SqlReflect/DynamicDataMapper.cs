@@ -9,11 +9,12 @@ namespace SqlReflect
 {
     public abstract class DynamicDataMapper : AbstractDataMapper
     {
-        readonly string getAllStmt;
-        readonly string getByIdStmt;
-        readonly string insertStmt;
-        readonly string deleteStmt;
-        readonly string updateStmt;
+        protected readonly string pkName;
+        protected readonly string getAllStmt;
+        protected readonly string getByIdStmt;
+        protected readonly string insertStmt;
+        protected readonly string deleteStmt;
+        protected readonly string updateStmt;
 
         public DynamicDataMapper(Type klass, string connStr, bool withCache) : base(connStr, withCache)
         {
@@ -23,6 +24,8 @@ namespace SqlReflect
             PropertyInfo pk = klass
                 .GetProperties()
                 .First(p => p.IsDefined(typeof(PKAttribute)));
+
+            pkName = pk.Name;
 
             string columns = String
                 .Join(",", klass.GetProperties().Where(p => p != pk)
