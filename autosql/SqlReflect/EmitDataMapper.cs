@@ -28,18 +28,11 @@ namespace SqlReflect
 
             TypeBuilder tb =
                 mb.DefineType(
-                    klass.Name + "DynamicType",
+                    klass.Name + "DynamicDataMapperType",
                     TypeAttributes.Public,
                     typeof(DynamicDataMapper)
                 );
             
-
-            FieldBuilder fbNumber = 
-                tb.DefineField(
-                    "sqlGetAll",
-                    typeof(string),
-                    FieldAttributes.Private | FieldAttributes.InitOnly
-                );
 
             // Define a constructor that takes same arguments of DynamicDataMapper. 
             Type[] parameterTypes = { typeof(Type), typeof(string), typeof(bool) };
@@ -57,12 +50,24 @@ namespace SqlReflect
             il.Emit(OpCodes.Ret);
 
             // Overrides AbstractDataMapper methods
-            string[] sqlMethodsName = { "Load", "sqlInsert", "sqlDelete", "sqlUpdate" };
-            MethodBuilder[] mbArray = defineMethods(tb, sqlMethodsName);
             
+            Type[] parametersType;
 
+            parametersType = new Type[]{ typeof(IDataReader) };
+            MethodBuilder mbLoadMethod = buildMethod(tb, "Load", klass, parametersType);
+                
+            parametersType = new Type[]{ typeof(object) };
+            MethodBuilder mbSQLInsertMethod = buildMethod(tb, "sqlInsert", typeof(string), parametersType);   
+            MethodBuilder mbSQLDeleteMethod = buildMethod(tb, "sqlDelete", typeof(string), parametersType);  
+            MethodBuilder mbSQLUpdateMethod = buildMethod(tb, "sqlUpdate", typeof(string), parametersType);
+                
+            Type type = tb.CreateType();
 
+            DynamicDataMapper ddm = (DynamicDataMapper)Activator.CreateInstance(type);
 
+            ab.Save(aName.Name + ".dll");
+
+            return ddm;
             /*
             AssemblyName aName = new AssemblyName("DynamicAssemblyExample");
         AssemblyBuilder ab = 
@@ -127,38 +132,19 @@ namespace SqlReflect
             */
         }
 
-        private FieldBuilder[] defineFields(TypeBuilder tb, string[] sqlStringsName)
+        private static MethodBuilder buildMethod(TypeBuilder tb, string methodName, Type retType, Type[] paramsType)
         {
-            FieldBuilder[] fbArray = new FieldBuilder[sqlStringsName.Length];
-            for(int i = 0 ; i < fbArray.Length ; i++)
-            {
-                fbArray[i] = tb.DefineField(
-                        sqlStringsName[i],
-                        typeof(string),
-                        FieldAttributes.Private | FieldAttributes.InitOnly
-                    );
-            }
-
-            return fbArray;
+            return tb.DefineMethod(methodName,
+                MethodAttributes.Public | MethodAttributes.ReuseSlot |
+                MethodAttributes.Virtual | MethodAttributes.HideBySig,
+            retType,
+            paramsType);
         }
 
-        private MethodBuilder[] defineMethods(TypeBuilder tb, string[] sqlMethodsName)
+        private static void buildLoadMethod()
         {
-            MethodBuilder[] mbArray = new MethodBuilder[sqlMethodsName.Length];
-            /*
-            for(int i = 0 ; i < mbArray.Length ; i++)
-            {
-                mbArray[i] = tb.DefineMethod(sqlMethodsName[i],
-                 MethodAttributes.Public | MethodAttributes.ReuseSlot |
-                 MethodAttributes.Virtual | MethodAttributes.HideBySig,
-                typeof(string),
-                new Type[0]);
-            }
-            */
-
-            //                    work on this!!!!!!!!!!!!11
-
-            return mbArray;
+            throw new NotImplementedException();
         }
+
     }
 }

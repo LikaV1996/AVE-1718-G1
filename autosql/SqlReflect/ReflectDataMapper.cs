@@ -75,12 +75,12 @@ namespace SqlReflect
                     pi.SetValue(obj, dr[pi.Name] is DBNull ? "NULL" : dr[pi.Name]);
                 else
                 {
-                    IDataMapper dm = new ReflectDataMapper(pi.PropertyType,connStr);
+                    IDataMapper rdm = new ReflectDataMapper(pi.PropertyType,connStr);
                     PropertyInfo[] objPI = pi.PropertyType.GetProperties();
 
                     foreach(PropertyInfo p in objPI){
                         if (p.GetCustomAttribute(typeof(PKAttribute)) != null)
-                            pi.SetValue(obj, dm.GetById(dr[p.Name]));
+                            pi.SetValue(obj, rdm.GetById(dr[p.Name]));
                     }
                     
                 }
