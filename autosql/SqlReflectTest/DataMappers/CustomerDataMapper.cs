@@ -21,31 +21,35 @@ namespace SqlReflectTest.DataMappers
         public CustomerDataMapper(Type klass, string connStr, bool withCache) : base(klass,connStr,false)
         {
         }
-        
+
         protected override object Load(IDataReader dr)
         {
-            Customer c = new Customer();
-            c.CustomerID = (string)dr["CustomerID"];
-            c.CompanyName = (string)dr["CompanyName"];
-            c.ContactName = (string)dr["ContactName"];
-            c.ContactTitle = (string)dr["ContactTitle"];
-            c.Address = (string)dr["Address"];
-            c.City = (string)dr["City"];
-            c.Region = dr["Region"] as string;
-            c.PostalCode = dr["PostalCode"] as string;
-            c.Country = (string)dr["Country"];
-            c.Phone = (string)dr["Phone"];
-            c.Fax = dr["Fax"] as string;
+            Customer c = new Customer()
+            {
+                CustomerID = (string)dr["CustomerID"],
+                CompanyName = (string)dr["CompanyName"],
+                ContactName = (string)dr["ContactName"],
+                ContactTitle = (string)dr["ContactTitle"],
+                Address = (string)dr["Address"],
+                City = (string)dr["City"],
+                Region = dr["Region"] as string,
+                PostalCode = dr["PostalCode"] as string,
+                Country = (string)dr["Country"],
+                Phone = (string)dr["Phone"],
+                Fax = dr["Fax"] as string
+            };
             return c;
         }
 
         protected override string SqlInsert(object target)
         {
             Customer c = (Customer)target;
-            string values = "'" + c.CustomerID + "' , '" + c.CompanyName + "' , '"
-                + c.ContactName + "' , '" + c.ContactTitle + "' , '" + c.Address + "' , '"
-                + c.City + "' , '" + c.Region + "' , '" + c.PostalCode + "' , '"
-                + c.Country + "' , '" + c.Phone + "' , '" + c.Fax + "'";
+            string values = String.Concat(new string[]{
+                "'", c.CustomerID, "' , '", c.CompanyName, "' , '"
+                , c.ContactName, "' , '", c.ContactTitle, "' , '", c.Address, "' , '"
+                , c.City, "' , '", c.Region, "' , '", c.PostalCode, "' , '"
+                , c.Country, "' , '", c.Phone, "' , '", c.Fax, "'"
+            });
             return base.insertStmt + "(" + values + ")";
         }
 

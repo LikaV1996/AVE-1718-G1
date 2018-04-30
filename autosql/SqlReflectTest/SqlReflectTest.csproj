@@ -54,6 +54,7 @@
     <Compile Include="AbstractProductDataMapperTest.cs" />
     <Compile Include="AbstractShipperDataMapperTest.cs" />
     <Compile Include="CategoryDataMapperReflectTest.cs" />
+    <Compile Include="CustomerEmitDataMapperTest.cs" />
     <Compile Include="CustomerDataMapperTest .cs" />
     <Compile Include="DataMappers\CustomerDataMapper.cs" />
     <Compile Include="DataMappers\ShipperDataMapper.cs" />

@@ -18,8 +18,13 @@ namespace App
 
         static void Main(string[] args)
         {
-            CompareMappers(typeof(Employee));
-            CompareMappers(typeof(Customer));
+            //CompareMappers(typeof(Employee));
+            //CompareMappers(typeof(Customer));
+
+            DynamicDataMapper ddm = EmitDataMapper.Build(typeof(Customer), connStr, false);
+            
+            ddm.Delete(null);
+            int debug = 0;
 
         }
         private static void CompareMappers(Type klass)

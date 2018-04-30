@@ -9,7 +9,6 @@ namespace SqlReflect
 {
     public abstract class DynamicDataMapper : AbstractDataMapper
     {
-        protected readonly string pkName;
         protected readonly string getAllStmt;
         protected readonly string getByIdStmt;
         protected readonly string insertStmt;
