@@ -25,10 +25,11 @@ namespace SqlReflect
                 .GetProperties()
                 .First(p => p.IsDefined(typeof(PKAttribute)));
 
-            pkName = pk.Name;
+            PKAttribute PKatt = (PKAttribute)pk.GetCustomAttribute(typeof(PKAttribute));
+
 
             string columns = String
-                .Join(",", klass.GetProperties().Where(p => p != pk)
+                .Join(",", klass.GetProperties().Where(p => p != pk || (p == pk && !PKatt.AutoIncrement))
                 .Select(p => p.Name));
 
             getAllStmt = "SELECT " + pk.Name + "," + columns + " FROM " + table.Name;

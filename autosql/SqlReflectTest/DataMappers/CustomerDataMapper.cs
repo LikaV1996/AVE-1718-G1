@@ -21,17 +21,6 @@ namespace SqlReflectTest.DataMappers
         public CustomerDataMapper(Type klass, string connStr, bool withCache) : base(klass,connStr,false)
         {
         }
-        /*
-        protected override string SqlGetAll()
-        {
-            return SQL_GET_ALL;
-        }
-        */
-        protected override string SqlGetById(object id)
-        {
-            return base.getByIdStmt + "'" + id + "'";
-            //return SQL_GET_BY_ID + "'" + id + "'";
-        }
         
         protected override object Load(IDataReader dr)
         {
@@ -58,7 +47,6 @@ namespace SqlReflectTest.DataMappers
                 + c.City + "' , '" + c.Region + "' , '" + c.PostalCode + "' , '"
                 + c.Country + "' , '" + c.Phone + "' , '" + c.Fax + "'";
             return base.insertStmt + "(" + values + ")";
-            //return SQL_INSERT + "(" + values + ")";
         }
 
         protected override string SqlUpdate(object target)
@@ -67,45 +55,29 @@ namespace SqlReflectTest.DataMappers
             
             string setString = String.Concat(
                 new string[] {
-                    "CompanyName='", c.CompanyName, "'",
-                    "ContactName='" , c.ContactName, "'",
-                    "ContactTitle='", c.ContactTitle, "'",
-                    "Address='", c.Address, "'",
-                    "City='", c.City, "'",
-                    "Region='", c.Region, "'",
-                    "PostalCode='", c.PostalCode, "'",
-                    "Country='", c.Country, "'",
-                    "Phone='", c.Phone, "'",
+                    "CompanyName='", c.CompanyName, "', ",
+                    "ContactName='" , c.ContactName, "', ",
+                    "ContactTitle='", c.ContactTitle, "', ",
+                    "Address='", c.Address, "', ",
+                    "City='", c.City, "', ",
+                    "Region='", c.Region, "', ",
+                    "PostalCode='", c.PostalCode, "', ",
+                    "Country='", c.Country, "', ",
+                    "Phone='", c.Phone, "', ",
                     "Fax='", c.Fax, "'"
                 }
             );
 
             return String.Format(base.updateStmt,
-                    c.CustomerID,
-                    setString
+                    setString,
+                    "'" + c.CustomerID + "'"
                 );
-
-            /*
-            return String.Format(SQL_UPDATE,
-                "'" + c.CustomerID + "'",
-                "'" + c.CompanyName + "'",
-                "'" + c.ContactName + "'",
-                "'" + c.ContactTitle + "'",
-                "'" + c.Address + "'",
-                "'" + c.City + "'",
-                "'" + c.Region + "'",
-                "'" + c.PostalCode + "'",
-                "'" + c.Country + "'",
-                "'" + c.Phone + "'",
-                "'" + c.Fax + "'");
-                */
         }
 
         protected override string SqlDelete(object target)
         {
             Customer c = (Customer)target;
             return base.deleteStmt + "'" + c.CustomerID + "'";
-            //return SQL_DELETE + "'" + c.CustomerID + "'";
         }
     }
 }

@@ -35,7 +35,7 @@ namespace SqlReflectTest
         }
         public void TestCustomerGetById()
         {
-            Customer c = (Customer)customers.GetById("ANTON");
+            Customer c = (Customer)customers.GetById("'" + "ANTON" + "'");
             Assert.AreEqual("Antonio Moreno Taquería", c.CompanyName);
             Assert.AreEqual("Antonio Moreno", c.ContactName);
             Assert.AreEqual("Owner", c.ContactTitle);
@@ -69,7 +69,7 @@ namespace SqlReflectTest
             };
 
             //customers.Delete(c);
-            object id = customers.Insert(c);
+            object id = "'" + customers.Insert(c) + "'";
             //
             // Get the new customer object from database
             //
@@ -104,7 +104,8 @@ namespace SqlReflectTest
 
         public void TestCustomerUpdate()
         {
-            Customer original = (Customer)customers.GetById("FRANK");
+            string id = "'" + "FRANK" + "'";
+            Customer original = (Customer)customers.GetById(id);
             Customer modified = new Customer()
             {
                 CustomerID = "FRANK",
@@ -113,11 +114,11 @@ namespace SqlReflectTest
                 ContactTitle = "Owner",
                 Address = "IDK",
                 City = "IDC",
-                Region = "NULL",
+                Region = null,
                 PostalCode = "FFS",
                 Country = "IDGAF",
                 Phone = "(+351) 770 300 300",
-                Fax = "NULL"
+                Fax = null
             };
             /*  //Just in case DataBase goes Bananas
             modified = new Customer()
@@ -128,7 +129,7 @@ namespace SqlReflectTest
                 ContactTitle = "Marketing Manager",
                 Address = "Berliner Platz 43",
                 City = "München",
-                Region = "NULL",
+                Region = null,
                 PostalCode = "80805",
                 Country = "Germany",
                 Phone = "089-0877310",
@@ -136,30 +137,30 @@ namespace SqlReflectTest
             };
             */
             customers.Update(modified);
-            Customer actual = (Customer)customers.GetById("FRANK");
+            Customer actual = (Customer)customers.GetById(id);
             Assert.AreEqual(modified.CompanyName, actual.CompanyName);
             Assert.AreEqual(modified.ContactName, actual.ContactName);
             Assert.AreEqual(modified.ContactTitle, actual.ContactTitle);
             Assert.AreEqual(modified.Address, actual.Address);
             Assert.AreEqual(modified.City, actual.City);
-            Assert.AreEqual(modified.Region, actual.Region);
+            Assert.AreEqual(modified.Region ?? "", actual.Region);
             Assert.AreEqual(modified.PostalCode, actual.PostalCode);
             Assert.AreEqual(modified.Country, actual.Country);
             Assert.AreEqual(modified.Phone, actual.Phone);
-            Assert.AreEqual(modified.Fax, actual.Fax);
+            Assert.AreEqual(modified.Fax ?? "", actual.Fax);
 
             customers.Update(original);
-            actual = (Customer)customers.GetById("FRANK");
+            actual = (Customer)customers.GetById(id);
             Assert.AreEqual(original.CompanyName, actual.CompanyName);
             Assert.AreEqual(original.ContactName, actual.ContactName);
             Assert.AreEqual(original.ContactTitle, actual.ContactTitle);
             Assert.AreEqual(original.Address, actual.Address);
             Assert.AreEqual(original.City, actual.City);
-            Assert.AreEqual(original.Region, actual.Region);
+            Assert.AreEqual(original.Region ?? "", actual.Region);
             Assert.AreEqual(original.PostalCode, actual.PostalCode);
             Assert.AreEqual(original.Country, actual.Country);
             Assert.AreEqual(original.Phone, actual.Phone);
-            Assert.AreEqual(original.Fax, actual.Fax);
+            Assert.AreEqual(original.Fax ?? "", actual.Fax);
             /*
             Assert.AreEqual("Frankenversand", actual.CompanyName);
             Assert.AreEqual("Peter Franken", actual.ContactName);
@@ -173,5 +174,6 @@ namespace SqlReflectTest
             Assert.AreEqual("089-0877451", actual.Fax);
             */
         }
+        
     }
 }
