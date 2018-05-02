@@ -61,11 +61,11 @@ namespace SqlReflectTest
                 ContactTitle = "Owner",
                 Address = "Nowhere",
                 City = "Nope",
-                Region = "NULL",
+                Region = null,
                 PostalCode = "non-nono",
                 Country = "Far Away Land",
                 Phone = "9177(dance dance)",
-                Fax = "NULL"
+                Fax = null
             };
 
             //customers.Delete(c);
@@ -79,11 +79,11 @@ namespace SqlReflectTest
             Assert.AreEqual(c.ContactTitle, actual.ContactTitle);
             Assert.AreEqual(c.Address, actual.Address);
             Assert.AreEqual(c.City, actual.City);
-            Assert.AreEqual(c.Region, actual.Region);
+            Assert.AreEqual(c.Region ?? "", actual.Region);
             Assert.AreEqual(c.PostalCode, actual.PostalCode);
             Assert.AreEqual(c.Country, actual.Country);
             Assert.AreEqual(c.Phone, actual.Phone);
-            Assert.AreEqual(c.Fax, actual.Fax);
+            Assert.AreEqual(c.Fax ?? "", actual.Fax);
             //
             // Delete the created customer from database
             //

@@ -28,12 +28,14 @@ namespace SqlReflect
 
 
             string columns = String
-                .Join(",", klass.GetProperties().Where(p => p != pk || (p == pk && !PKatt.AutoIncrement))
+                .Join(",", klass.GetProperties().Where(p => p != pk)// || (p == pk && !PKatt.AutoIncrement))
                 .Select(p => p.Name));
+
+            string PKautoIncrement = !PKatt.AutoIncrement ? (pk.Name + ",") : "";
 
             getAllStmt = "SELECT " + pk.Name + "," + columns + " FROM " + table.Name;
             getByIdStmt = getAllStmt + " WHERE " + pk.Name + "=";
-            insertStmt = "INSERT INTO " + table.Name + "(" + columns + ") OUTPUT INSERTED." + pk.Name + " VALUES ";
+            insertStmt = "INSERT INTO " + table.Name + "(" + PKautoIncrement + columns + ") OUTPUT INSERTED." + pk.Name + " VALUES ";
             deleteStmt = "DELETE FROM " + table.Name + " WHERE " + pk.Name + "=";
             updateStmt = "UPDATE " + table.Name + " SET {0} WHERE " + pk.Name + "={1}";
         }

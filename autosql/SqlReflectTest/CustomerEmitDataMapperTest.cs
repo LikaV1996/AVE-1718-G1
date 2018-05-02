@@ -14,22 +14,22 @@ namespace SqlReflectTest
         }
 
         [TestMethod]
-        public new void TestCustomerGetAll() {
+        public void TestCustomerEmitGetAll() {
             base.TestCustomerGetAll();
         }
 
         [TestMethod]
-        public new void TestCustomerGetById() {
+        public void TestCustomerEmitGetById() {
             base.TestCustomerGetById();
         }
 
         [TestMethod]
-        public new void TestCustomerInsertAndDelete() {
+        public void TestCustomerEmitInsertAndDelete() {
             base.TestCustomerInsertAndDelete();
         }
 
         [TestMethod]
-        public new void TestCustomerUpdate() {
+        public void TestCustomerEmitUpdate() {
             base.TestCustomerUpdate();
         }
     }

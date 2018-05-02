@@ -15,6 +15,7 @@ namespace SqlReflect
         private static readonly MethodInfo concatStrArray = typeof(string).GetMethod("Concat", new Type[] { typeof(string[]) });
 
         private static readonly MethodInfo concat4Str = typeof(string).GetMethod("Concat", new Type[] { typeof(string), typeof(string), typeof(string), typeof(string) });
+        private static readonly MethodInfo concat3Str = typeof(string).GetMethod("Concat", new Type[] { typeof(string), typeof(string), typeof(string) });
 
         private static readonly MethodInfo format1Str2Obj = typeof(string).GetMethod("Format", new Type[] { typeof(string), typeof(object), typeof(object) });
 
@@ -92,33 +93,46 @@ namespace SqlReflect
             Type[] parametersType = new Type[] { typeof(IDataReader) };
             MethodBuilder mbLoadMethod = BuildMethod(tb, "Load", typeof(object), parametersType);
 
+            ParameterBuilder pb = mbLoadMethod.DefineParameter(
+                    1,
+                    ParameterAttributes.In,
+                    "dr"
+                );
+
             ILGenerator il = mbLoadMethod.GetILGenerator();
-            LocalBuilder tobj = il.DeclareLocal(klass);
+
+            LocalBuilder c = il.DeclareLocal(klass);
+            LocalBuilder V_1 = il.DeclareLocal(klass);
+            LocalBuilder V_2 = il.DeclareLocal(typeof(object));
 
             il.Emit(OpCodes.Nop);
-            il.Emit(OpCodes.Ldloca_S, tobj);
+            il.Emit(OpCodes.Ldloca_S, V_1);
             il.Emit(OpCodes.Initobj, klass);
 
             foreach (PropertyInfo p in klass.GetProperties())
             {
-                il.Emit(OpCodes.Ldloca_S, tobj);
+                il.Emit(OpCodes.Ldloca_S, V_1);
                 il.Emit(OpCodes.Ldarg_1);
-                il.Emit(OpCodes.Ldstr, p.PropertyType);
-                il.Emit(OpCodes.Callvirt, p.GetGetMethod());
-                il.Emit(OpCodes.Castclass, typeof(string));
+                il.Emit(OpCodes.Ldstr, p.Name);
+                il.Emit(OpCodes.Callvirt, typeof(IDataRecord).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                         .Where(k => k.GetIndexParameters().Any() && k.GetIndexParameters()[0].ParameterType == typeof(string))     //find get_Item()
+                         .Select(k => k.GetGetMethod()).First());   //get getmethod
+                il.Emit(OpCodes.Isinst, typeof(System.String));
                 il.Emit(OpCodes.Call, p.GetSetMethod());
                 il.Emit(OpCodes.Nop);
             }
 
+            il.Emit(OpCodes.Ldloc_1);
+            il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Ldloc_0);
             il.Emit(OpCodes.Box, klass);
-            il.Emit(OpCodes.Stloc_1);
+            il.Emit(OpCodes.Stloc_2);
 
             Label label = il.DefineLabel();
+            
             il.Emit(OpCodes.Br_S, label);
             il.MarkLabel(label);
-
-            il.Emit(OpCodes.Ldloc_1);
+            il.Emit(OpCodes.Ldloc_2);
             il.Emit(OpCodes.Ret);
         }
 
@@ -130,6 +144,8 @@ namespace SqlReflect
             ILGenerator il = mbSQLInsertMethod.GetILGenerator();
 
             LocalBuilder tobj = il.DeclareLocal(klass);
+            LocalBuilder localVariable_1 = il.DeclareLocal(typeof(string));
+            LocalBuilder localVariable_2 = il.DeclareLocal(typeof(string));
 
             il.Emit(OpCodes.Nop);
             il.Emit(OpCodes.Ldarg_1);
@@ -148,7 +164,7 @@ namespace SqlReflect
             PropertyInfo pk = pi
                 .First(p => p.IsDefined(typeof(PKAttribute)));
 
-            for (int idx = 1, i = 0 ; i < pi.Length ; i++)
+            for (int idx = 1, i = 0; i < pi.Length; i++)
             {
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Ldc_I4_S, idx++);
@@ -157,12 +173,12 @@ namespace SqlReflect
                 il.Emit(OpCodes.Stelem_Ref);
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Ldc_I4_S, idx++);
-                il.Emit(OpCodes.Ldstr, (i < pi.Length-1) ? "' , '" : "'" ); //string to seperate properties
+                il.Emit(OpCodes.Ldstr, (i < pi.Length - 1) ? "' , '" : "'"); //string to seperate properties
                 il.Emit(OpCodes.Stelem_Ref);
             }
-            
+
             il.Emit(OpCodes.Call, concatStrArray);
-            il.Emit(OpCodes.Stloc_1);
+            il.Emit(OpCodes.Stloc_1, localVariable_1);
             il.Emit(OpCodes.Ldarg_0);
 
 
@@ -178,7 +194,7 @@ namespace SqlReflect
             il.Emit(OpCodes.Ldstr, ")");
 
             il.Emit(OpCodes.Call, concat4Str);
-            il.Emit(OpCodes.Stloc_2);
+            il.Emit(OpCodes.Stloc_2, localVariable_2);
             il.Emit(OpCodes.Br_S, label);
             il.MarkLabel(label);
             il.Emit(OpCodes.Ldloc_2);
@@ -186,17 +202,18 @@ namespace SqlReflect
             il.Emit(OpCodes.Ret);
 
         }
-        
+
         private static void BuildMethod_SQLDelete(TypeBuilder tb, Type klass)
         {
             Type[] parametersType = new Type[] { typeof(object) };
             MethodBuilder mbSLQDeleteMethod = BuildMethod(tb, "SqlDelete", typeof(string), parametersType);
-            
+
             FieldInfo deleteStmtField = typeof(DynamicDataMapper)
                 .GetField("deleteStmt", BindingFlags.Instance | BindingFlags.NonPublic);
 
             ILGenerator il = mbSLQDeleteMethod.GetILGenerator();
             LocalBuilder tobj = il.DeclareLocal(klass);
+            LocalBuilder localVariable_1 = il.DeclareLocal(typeof(string));
 
             PropertyInfo pk = klass
                 .GetProperties()
@@ -215,7 +232,7 @@ namespace SqlReflect
             il.Emit(OpCodes.Ldstr, "'");
 
             il.Emit(OpCodes.Call, concat4Str);
-            il.Emit(OpCodes.Stloc_1);
+            il.Emit(OpCodes.Stloc_1, localVariable_1);
 
             Label label = il.DefineLabel();
 
@@ -234,6 +251,8 @@ namespace SqlReflect
             ILGenerator il = mbSQLUpdateMethod.GetILGenerator();
 
             LocalBuilder tobj = il.DeclareLocal(klass);
+            LocalBuilder localVariable_1 = il.DeclareLocal(typeof(string));
+            LocalBuilder localVariable_2 = il.DeclareLocal(typeof(string));
 
             il.Emit(OpCodes.Nop);
             il.Emit(OpCodes.Ldarg_1);
@@ -269,7 +288,7 @@ namespace SqlReflect
             }
 
             il.Emit(OpCodes.Call, concatStrArray);
-            il.Emit(OpCodes.Stloc_1);
+            il.Emit(OpCodes.Stloc_1, localVariable_1);
             il.Emit(OpCodes.Ldarg_0);
 
 
@@ -280,14 +299,15 @@ namespace SqlReflect
 
 
             il.Emit(OpCodes.Ldfld, updateStmtField);
+            il.Emit(OpCodes.Ldloc_1);
             il.Emit(OpCodes.Ldstr, "'");
             il.Emit(OpCodes.Ldloca_S, tobj);
             il.Emit(OpCodes.Call, pk.GetGetMethod());
             il.Emit(OpCodes.Ldstr, "'");
 
-            il.Emit(OpCodes.Call, concat4Str);
+            il.Emit(OpCodes.Call, concat3Str);
             il.Emit(OpCodes.Call, format1Str2Obj);
-            il.Emit(OpCodes.Stloc_2);
+            il.Emit(OpCodes.Stloc_2, localVariable_2);
             il.Emit(OpCodes.Br_S, label);
             il.MarkLabel(label);
             il.Emit(OpCodes.Ldloc_2);

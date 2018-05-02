@@ -8,4 +8,3 @@ C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflect\bin\Debug\SqlRefle
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflect\obj\Debug\SqlReflect.csproj.CoreCompileInputs.cache
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflect\obj\Debug\SqlReflect.dll
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflect\obj\Debug\SqlReflect.pdb
-C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflect\obj\Debug\SqlReflect.csprojResolveAssemblyReference.cache

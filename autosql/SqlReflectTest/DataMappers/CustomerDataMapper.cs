@@ -26,16 +26,16 @@ namespace SqlReflectTest.DataMappers
         {
             Customer c = new Customer()
             {
-                CustomerID = (string)dr["CustomerID"],
-                CompanyName = (string)dr["CompanyName"],
-                ContactName = (string)dr["ContactName"],
-                ContactTitle = (string)dr["ContactTitle"],
-                Address = (string)dr["Address"],
-                City = (string)dr["City"],
+                CustomerID = dr["CustomerID"] as string,
+                CompanyName = dr["CompanyName"] as string,
+                ContactName = dr["ContactName"] as string,
+                ContactTitle = dr["ContactTitle"] as string,
+                Address = dr["Address"] as string,
+                City = dr["City"] as string,
                 Region = dr["Region"] as string,
                 PostalCode = dr["PostalCode"] as string,
-                Country = (string)dr["Country"],
-                Phone = (string)dr["Phone"],
+                Country = dr["Country"] as string,
+                Phone = dr["Phone"] as string,
                 Fax = dr["Fax"] as string
             };
             return c;

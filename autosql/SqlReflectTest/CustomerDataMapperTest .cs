@@ -4,7 +4,7 @@ using SqlReflectTest.DataMappers;
 using SqlReflectTest.Model;
 
 namespace SqlReflectTest
-{/*
+{
     [TestClass]
     public class CustomerDataMapperTest : AbstractCustomerDataMapperTest
     {
@@ -32,5 +32,4 @@ namespace SqlReflectTest
             base.TestCustomerUpdate();
         }
     }
-    */
 }
