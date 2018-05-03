@@ -17,17 +17,17 @@ namespace SqlReflectTest
         }
 
         [TestMethod]
-        public new void TestProductEmitGetAll() {
+        public void TestProductEmitGetAll() {
             base.TestProductGetAll();
         }
 
         [TestMethod]
-        public new void TestProducEmittGetById() {
+        public void TestProducEmitGetById() {
             base.TestProductGetById();
         }
 
         [TestMethod]
-        public new void TestProductEmitInsertAndDelete()
+        public void TestProductEmitInsertAndDelete()
         {
             base.TestProductInsertAndDelete();
         }

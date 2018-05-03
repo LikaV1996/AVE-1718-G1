@@ -142,13 +142,11 @@ namespace SqlReflect
 
             il.Emit(OpCodes.Nop);
 
-            if (!classOrStruct)
-            {
+            if (!classOrStruct) {
                 il.Emit(OpCodes.Ldloca_S, localVariable_1);
                 il.Emit(OpCodes.Initobj, klass);
             }
-            else if (classOrStruct)
-            {
+            else if (classOrStruct) {
                 il.Emit(OpCodes.Newobj, klass.GetConstructor(new Type[] { }));
                 il.Emit(OpCodes.Stloc_1);
             }
@@ -181,16 +179,9 @@ namespace SqlReflect
                         .Where(k => k.GetIndexParameters().Any() && k.GetIndexParameters()[0].ParameterType == typeof(object))
                         .Select(k => k.GetGetMethod()).First());
 
-                if (p.PropertyType.IsPrimitive)
-                    il.Emit(OpCodes.Unbox_Any, p.PropertyType);
-                else
-                    il.Emit(OpCodes.Isinst, p.PropertyType);
+                il.Emit(( p.PropertyType.IsPrimitive ? OpCodes.Unbox_Any : OpCodes.Isinst ), p.PropertyType);
 
-                if ( !classOrStruct )
-                    il.Emit(OpCodes.Call, p.GetSetMethod());
-                else if( classOrStruct )
-                il.Emit(OpCodes.Callvirt, p.GetSetMethod());
-                //else { /*throw error ??*/ }
+                il.Emit(( classOrStruct ? OpCodes.Callvirt : OpCodes.Call ), p.GetSetMethod());
 
                 il.Emit(OpCodes.Nop);
             }
@@ -198,10 +189,10 @@ namespace SqlReflect
             il.Emit(OpCodes.Ldloc_1);
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Ldloc_0);
+
             if( !classOrStruct )
                 il.Emit(OpCodes.Box, klass);
-            //else if( /*is class*/ ) // nothing happens
-            //else { /*throw error ??*/ }
+
             il.Emit(OpCodes.Stloc_2);
 
             Label label = il.DefineLabel();
@@ -225,11 +216,9 @@ namespace SqlReflect
 
             il.Emit(OpCodes.Nop);
             il.Emit(OpCodes.Ldarg_1);
-            if( !classOrStruct )
-                il.Emit(OpCodes.Unbox_Any, klass);
-            else if( classOrStruct )
-                il.Emit(OpCodes.Castclass, klass);
-            //else { /*throw error ??*/ }
+
+            il.Emit(( classOrStruct ? OpCodes.Castclass : OpCodes.Unbox_Any), klass);
+            
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Ldc_I4_S, arrayLength);
             il.Emit(OpCodes.Newarr, typeof(string));
@@ -245,15 +234,14 @@ namespace SqlReflect
 
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Ldc_I4_S, idx++);
+
                 if( !classOrStruct )
                     il.Emit(OpCodes.Ldloca_S, c);
                 else if( classOrStruct )
                     il.Emit(OpCodes.Ldloc_0);
-                //else { /*throw error ??*/ }
-                if( !classOrStruct )
-                    il.Emit(OpCodes.Call, p.GetGetMethod());
-                else if( classOrStruct )
-                    il.Emit(OpCodes.Callvirt, p.GetGetMethod());    //get method to return property value
+
+                il.Emit(( classOrStruct ? OpCodes.Callvirt : OpCodes.Call ), p.GetGetMethod());
+
                 il.Emit(OpCodes.Stelem_Ref);
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Ldc_I4_S, idx++);
@@ -284,7 +272,6 @@ namespace SqlReflect
             il.Emit(OpCodes.Ldloc_2);
 
             il.Emit(OpCodes.Ret);
-
         }
 
         private static void BuildMethod_SQLDelete(TypeBuilder tb, Type klass)
@@ -305,10 +292,9 @@ namespace SqlReflect
 
             il.Emit(OpCodes.Nop);
             il.Emit(OpCodes.Ldarg_1);
-            if( !classOrStruct )
-                il.Emit(OpCodes.Unbox_Any, klass);
-            else if( classOrStruct )
-                il.Emit(OpCodes.Castclass, klass);
+
+            il.Emit(( classOrStruct ? OpCodes.Castclass : OpCodes.Unbox_Any ), klass);
+
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Ldarg_0);
 
@@ -321,10 +307,8 @@ namespace SqlReflect
                 il.Emit(OpCodes.Ldloca_S, c);
             else if (classOrStruct)
                 il.Emit(OpCodes.Ldloc_0);
-            if( !classOrStruct )
-                il.Emit(OpCodes.Call, pk.GetGetMethod());
-            else if( classOrStruct )
-                il.Emit(OpCodes.Callvirt, pk.GetGetMethod());   //get method to return property value
+
+            il.Emit(( classOrStruct ? OpCodes.Callvirt : OpCodes.Call ), pk.GetGetMethod());   //get method to return property value
 
             if (PK_IsString)
             {
@@ -361,10 +345,9 @@ namespace SqlReflect
 
             il.Emit(OpCodes.Nop);
             il.Emit(OpCodes.Ldarg_1);
-            if( !classOrStruct )
-                il.Emit(OpCodes.Unbox_Any, klass);
-            else if( classOrStruct )
-                il.Emit(OpCodes.Castclass, klass);
+
+            il.Emit(( classOrStruct ? OpCodes.Castclass : OpCodes.Unbox_Any ), klass);
+
             il.Emit(OpCodes.Stloc_0);
             il.Emit(OpCodes.Ldc_I4_S, arrayLength);
             il.Emit(OpCodes.Newarr, typeof(string));
@@ -373,7 +356,7 @@ namespace SqlReflect
                 .First(p => p.IsDefined(typeof(PKAttribute)));
 
             int idx = 0;
-            foreach(PropertyInfo p in klass.GetProperties())    //only strings
+            foreach(PropertyInfo p in klass.GetProperties())
             {
                 if (p.IsDefined(typeof(PKAttribute)) /*p == pk*/) continue;
 
@@ -389,10 +372,7 @@ namespace SqlReflect
                 else if( classOrStruct )
                     il.Emit(OpCodes.Ldloc_0);
 
-                if( !classOrStruct)
-                    il.Emit(OpCodes.Call, p.GetGetMethod());
-                else if( classOrStruct )
-                    il.Emit(OpCodes.Callvirt, p.GetGetMethod());    //get method to return property value
+                il.Emit(( classOrStruct ? OpCodes.Callvirt : OpCodes.Call ), p.GetGetMethod());    //get method to return property value
 
                 il.Emit(OpCodes.Stelem_Ref);
                 il.Emit(OpCodes.Dup);
@@ -435,7 +415,6 @@ namespace SqlReflect
             else
             {
                 il.Emit(OpCodes.Box, pk.PropertyType);
-                
             }
             il.Emit(OpCodes.Call, format1Str2Obj);
             
@@ -446,7 +425,6 @@ namespace SqlReflect
             il.Emit(OpCodes.Ldloc_2);
 
             il.Emit(OpCodes.Ret);
-
         }
     }
 }
