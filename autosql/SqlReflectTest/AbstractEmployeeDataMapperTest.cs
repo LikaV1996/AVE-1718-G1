@@ -31,7 +31,7 @@ namespace SqlReflectTest
                 Console.WriteLine(p);
                 count++;
             }
-            Assert.AreEqual(8, count);
+            Assert.AreEqual(9, count);
         }
         public void TestEmployeeGetById()
         {
@@ -163,7 +163,7 @@ namespace SqlReflectTest
             Assert.AreEqual(original.TitleOfCourtesy, actual.TitleOfCourtesy);
             Assert.AreEqual(original.Address, actual.Address);
             Assert.AreEqual(original.City, actual.City);
-            Assert.AreEqual(original.Region, actual.Region);
+            Assert.AreEqual(original.Region ?? "", actual.Region);
             Assert.AreEqual(original.PostalCode, actual.PostalCode);
             Assert.AreEqual(original.Country, actual.Country);
             Assert.AreEqual(original.HomePhone, actual.HomePhone);

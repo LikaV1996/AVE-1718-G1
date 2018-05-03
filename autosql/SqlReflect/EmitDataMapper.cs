@@ -15,12 +15,15 @@ namespace SqlReflect
         private static readonly MethodInfo concatStrArr = typeof(string).GetMethod("Concat", new Type[] { typeof(string[]) });
         private static readonly MethodInfo concat4Str = typeof(string).GetMethod("Concat", new Type[] { typeof(string), typeof(string), typeof(string), typeof(string) });
         private static readonly MethodInfo concat3Str = typeof(string).GetMethod("Concat", new Type[] { typeof(string), typeof(string), typeof(string) });
+        private static readonly MethodInfo concat2Obj = typeof(string).GetMethod("Concat", new Type[] { typeof(object), typeof(object) });
 
         private static readonly MethodInfo format1Str2Obj = typeof(string).GetMethod("Format", new Type[] { typeof(string), typeof(object), typeof(object) });
 
         private static Type baseType = typeof(DynamicDataMapper);
 
         private static bool classOrStruct = false;
+        private static bool autoIncrement = true;
+        private static bool PK_IsString = false;
 
 
         public static DynamicDataMapper Build(Type klass, string connStr, bool withCache)
@@ -47,17 +50,42 @@ namespace SqlReflect
                     baseType
                 );
 
+
+
+
             if (klass.IsClass) classOrStruct = true;
 
+            PropertyInfo pk = klass
+                .GetProperties()
+                .First(p => p.IsDefined(typeof(PKAttribute)));
+
+            PKAttribute PKatt = (PKAttribute)pk.GetCustomAttribute(typeof(PKAttribute));
+
+            autoIncrement = PKatt.AutoIncrement;
+
+            PK_IsString = (pk.PropertyType == typeof(string));
 
             // Define a constructor that takes same arguments of DynamicDataMapper. 
             BuildConstructor(tb);
 
             // Overrides AbstractDataMapper methods
             BuildMethod_Load(tb, klass);
-            BuildMethod_SQLInsert(tb, klass);
+
+            int SQLInsertArrayLength = 0, SQLUpdateArrayLength = 0;
+            foreach (PropertyInfo p in klass.GetProperties())
+            {
+                if (p != pk) {
+                    SQLInsertArrayLength++;
+                    SQLUpdateArrayLength++;
+                }
+                    if(!autoIncrement) SQLInsertArrayLength++;
+            }
+            SQLInsertArrayLength = SQLInsertArrayLength * 2 + 1;
+            SQLUpdateArrayLength = SQLUpdateArrayLength * 3;
+
+            BuildMethod_SQLInsert(tb, klass, SQLInsertArrayLength);
             BuildMethod_SQLDelete(tb, klass);
-            BuildMethod_SQLUpdate(tb, klass);
+            BuildMethod_SQLUpdate(tb, klass, SQLUpdateArrayLength);
 
             Type type = tb.CreateType();
 
@@ -103,14 +131,6 @@ namespace SqlReflect
             Type[] parametersType = new Type[] { typeof(IDataReader) };
             MethodBuilder mbLoadMethod = BuildMethod(tb, "Load", typeof(object), parametersType);
 
-            /*
-            ParameterBuilder pb = mbLoadMethod.DefineParameter(
-                    1,
-                    ParameterAttributes.In,
-                    "dr"
-                );
-            */
-
             ILGenerator il = mbLoadMethod.GetILGenerator();
 
             LocalBuilder c = il.DeclareLocal(klass);
@@ -144,9 +164,13 @@ namespace SqlReflect
                 il.Emit(OpCodes.Callvirt, typeof(IDataRecord).GetProperties(BindingFlags.Instance | BindingFlags.Public)
                          .Where(k => k.GetIndexParameters().Any() && k.GetIndexParameters()[0].ParameterType == typeof(string))     //find get_Item()
                          .Select(k => k.GetGetMethod()).First());   //get getmethod
-                il.Emit(OpCodes.Isinst, typeof(string));
 
-                if( !classOrStruct )
+                if (p.PropertyType.IsPrimitive)
+                    il.Emit(OpCodes.Unbox_Any, p.PropertyType);    // CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                else
+                    il.Emit(OpCodes.Isinst, p.PropertyType);
+
+                if ( !classOrStruct )
                     il.Emit(OpCodes.Call, p.GetSetMethod());
                 else if( classOrStruct )
                 il.Emit(OpCodes.Callvirt, p.GetSetMethod());
@@ -160,7 +184,7 @@ namespace SqlReflect
             il.Emit(OpCodes.Ldloc_0);
             if( !classOrStruct )
                 il.Emit(OpCodes.Box, klass);
-            //elseif( /*is class*/ ) // nothing happens
+            //else if( /*is class*/ ) // nothing happens
             //else { /*throw error ??*/ }
             il.Emit(OpCodes.Stloc_2);
 
@@ -172,7 +196,7 @@ namespace SqlReflect
             il.Emit(OpCodes.Ret);
         }
 
-        private static void BuildMethod_SQLInsert(TypeBuilder tb, Type klass)
+        private static void BuildMethod_SQLInsert(TypeBuilder tb, Type klass, int arrayLength)
         {
             Type[] parametersType = new Type[] { typeof(object) };
             MethodBuilder mbSQLInsertMethod = BuildMethod(tb, "SqlInsert", typeof(string), parametersType);
@@ -191,17 +215,18 @@ namespace SqlReflect
                 il.Emit(OpCodes.Castclass, klass);
             //else { /*throw error ??*/ }
             il.Emit(OpCodes.Stloc_0);
-            il.Emit(OpCodes.Ldc_I4_S, 23);
+            il.Emit(OpCodes.Ldc_I4_S, arrayLength);
             il.Emit(OpCodes.Newarr, typeof(string));
             il.Emit(OpCodes.Dup);
             il.Emit(OpCodes.Ldc_I4_0);
             il.Emit(OpCodes.Ldstr, "'");
             il.Emit(OpCodes.Stelem_Ref);
 
-            PropertyInfo[] pi = klass.GetProperties();
-
-            for (int idx = 1, i = 0; i < pi.Length; i++)
+            int idx = 1;
+            foreach(PropertyInfo p in klass.GetProperties())
             {
+                if (autoIncrement && p.IsDefined(typeof(PKAttribute))) continue;
+
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Ldc_I4_S, idx++);
                 if( !classOrStruct )
@@ -210,13 +235,13 @@ namespace SqlReflect
                     il.Emit(OpCodes.Ldloc_0);
                 //else { /*throw error ??*/ }
                 if( !classOrStruct )
-                    il.Emit(OpCodes.Call, pi[i].GetGetMethod());
+                    il.Emit(OpCodes.Call, p.GetGetMethod());
                 else if( classOrStruct )
-                    il.Emit(OpCodes.Callvirt, pi[i].GetGetMethod());    //get method to return property value
+                    il.Emit(OpCodes.Callvirt, p.GetGetMethod());    //get method to return property value
                 il.Emit(OpCodes.Stelem_Ref);
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Ldc_I4_S, idx++);
-                il.Emit(OpCodes.Ldstr, (i < pi.Length - 1) ? "' , '" : "'"); //string to seperate properties
+                il.Emit(OpCodes.Ldstr, ( p != klass.GetProperties().Last() ) ? "' , '" : "'"); //string to seperate properties
                 il.Emit(OpCodes.Stelem_Ref);
             }
 
@@ -272,7 +297,10 @@ namespace SqlReflect
             il.Emit(OpCodes.Ldarg_0);
 
             il.Emit(OpCodes.Ldfld, deleteStmtField);
-            il.Emit(OpCodes.Ldstr, "'");
+
+            if(PK_IsString)
+                il.Emit(OpCodes.Ldstr, "'");
+
             if (!classOrStruct)
                 il.Emit(OpCodes.Ldloca_S, c);
             else if (classOrStruct)
@@ -281,9 +309,17 @@ namespace SqlReflect
                 il.Emit(OpCodes.Call, pk.GetGetMethod());
             else if( classOrStruct )
                 il.Emit(OpCodes.Callvirt, pk.GetGetMethod());   //get method to return property value
-            il.Emit(OpCodes.Ldstr, "'");
 
-            il.Emit(OpCodes.Call, concat4Str);
+            if (PK_IsString)
+            {
+                il.Emit(OpCodes.Ldstr, "'");
+                il.Emit(OpCodes.Call, concat4Str);
+            }
+            else
+            {
+                il.Emit(OpCodes.Box, pk.PropertyType);
+                il.Emit(OpCodes.Call, concat2Obj);
+            }
             il.Emit(OpCodes.Stloc_1);
 
             Label label = il.DefineLabel();
@@ -296,7 +332,7 @@ namespace SqlReflect
 
         }
 
-        private static void BuildMethod_SQLUpdate(TypeBuilder tb, Type klass)
+        private static void BuildMethod_SQLUpdate(TypeBuilder tb, Type klass, int arrayLength)
         {
             Type[] parametersType = new Type[] { typeof(object) };
             MethodBuilder mbSQLUpdateMethod = BuildMethod(tb, "SqlUpdate", typeof(string), parametersType);
@@ -314,18 +350,16 @@ namespace SqlReflect
             else if( classOrStruct )
                 il.Emit(OpCodes.Castclass, klass);
             il.Emit(OpCodes.Stloc_0);
-            il.Emit(OpCodes.Ldc_I4_S, 30);
+            il.Emit(OpCodes.Ldc_I4_S, arrayLength);
             il.Emit(OpCodes.Newarr, typeof(string));
 
-            PropertyInfo[] pi = klass.GetProperties();
-
-            PropertyInfo pk = pi
+            PropertyInfo pk = klass.GetProperties()
                 .First(p => p.IsDefined(typeof(PKAttribute)));
 
-            for (int idx = 0, i = 0; i < pi.Length; i++)    //only strings
+            int idx = 0;
+            foreach(PropertyInfo p in klass.GetProperties())    //only strings
             {
-                PropertyInfo p = pi[i];
-                if (p == pk) continue;
+                if (p.IsDefined(typeof(PKAttribute)) /*p == pk*/) continue;
 
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Ldc_I4_S, idx++);
@@ -333,18 +367,21 @@ namespace SqlReflect
                 il.Emit(OpCodes.Stelem_Ref);
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Ldc_I4_S, idx++);
+
                 if (!classOrStruct)
                     il.Emit(OpCodes.Ldloca_S, c);
                 else if( classOrStruct )
-                il.Emit(OpCodes.Ldloc_0);
-                if( !classOrStruct/*is struct*/ )
+                    il.Emit(OpCodes.Ldloc_0);
+
+                if( !classOrStruct)
                     il.Emit(OpCodes.Call, p.GetGetMethod());
                 else if( classOrStruct )
                     il.Emit(OpCodes.Callvirt, p.GetGetMethod());    //get method to return property value
+
                 il.Emit(OpCodes.Stelem_Ref);
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Ldc_I4_S, idx++);
-                il.Emit(OpCodes.Ldstr, (i < pi.Length - 1) ? "' , " : "'"); //string to seperate properties
+                il.Emit(OpCodes.Ldstr, ( p != klass.GetProperties().Last() ) ? "' , " : "'"); //string to seperate properties
                 il.Emit(OpCodes.Stelem_Ref);
             }
 
@@ -361,7 +398,10 @@ namespace SqlReflect
 
             il.Emit(OpCodes.Ldfld, updateStmtField);
             il.Emit(OpCodes.Ldloc_1);
-            il.Emit(OpCodes.Ldstr, "'");
+
+            if(PK_IsString)
+                il.Emit(OpCodes.Ldstr, "'");
+
             if ( !classOrStruct ) {
                 il.Emit(OpCodes.Ldloca_S, c);
                 il.Emit(OpCodes.Call, pk.GetGetMethod());
@@ -370,9 +410,19 @@ namespace SqlReflect
                 il.Emit(OpCodes.Ldloc_0);
                 il.Emit(OpCodes.Callvirt, pk.GetGetMethod());
             }
-            il.Emit(OpCodes.Ldstr, "'");
-            il.Emit(OpCodes.Call, concat3Str);
+
+            if (PK_IsString)
+            {
+                il.Emit(OpCodes.Ldstr, "'");
+                il.Emit(OpCodes.Call, concat3Str);
+            }
+            else
+            {
+                il.Emit(OpCodes.Box, pk.PropertyType);
+                
+            }
             il.Emit(OpCodes.Call, format1Str2Obj);
+            
 
             il.Emit(OpCodes.Stloc_2);
             il.Emit(OpCodes.Br_S, label);

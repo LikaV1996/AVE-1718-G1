@@ -18,7 +18,6 @@ C:\Users\Marco\Desktop\AVE\autosql\SqlReflectTest\bin\Debug\Microsoft.VisualStud
 C:\Users\Marco\Desktop\AVE\autosql\SqlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.xml
 C:\Users\Marco\Desktop\AVE\autosql\SqlReflectTest\obj\Debug\SqlReflectTest.dll
 C:\Users\Marco\Desktop\AVE\autosql\SqlReflectTest\obj\Debug\SqlReflectTest.pdb
-C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\obj\Debug\SqlReflectTest.csprojResolveAssemblyReference.cache
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll
@@ -32,6 +31,7 @@ C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\bin\Debug\SqlR
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\bin\Debug\SqlReflect.pdb
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.xml
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.xml
+C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\obj\Debug\SqlReflectTest.csprojResolveAssemblyReference.cache
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\obj\Debug\SqlReflectTest.csproj.CoreCompileInputs.cache
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\obj\Debug\SqlReflectTest.dll
 C:\Users\Luis\Desktop\ISEL\AVE\AVE-1718-G1\autosql\SqlReflectTest\obj\Debug\SqlReflectTest.pdb
