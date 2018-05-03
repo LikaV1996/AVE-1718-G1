@@ -25,9 +25,12 @@ namespace SqlReflect
         private static bool autoIncrement = true;
         private static bool PK_IsString = false;
 
+        private static string connectionStr;
 
         public static DynamicDataMapper Build(Type klass, string connStr, bool withCache)
         {
+            connectionStr = connStr;
+
             AssemblyName aName = new AssemblyName(klass.Name + "DynamicDataMapper");
 
             AssemblyBuilder ab =
@@ -153,11 +156,19 @@ namespace SqlReflect
 
             foreach (PropertyInfo p in klass.GetProperties())
             {
-                if( !classOrStruct )
+                bool propertyTypeIsObject = !(p.PropertyType.IsPrimitive || p.PropertyType == typeof(string));
+
+                if ( !classOrStruct )
                     il.Emit(OpCodes.Ldloca_S, localVariable_1);
                 else if( classOrStruct )
                     il.Emit(OpCodes.Ldloc_1);
                 //else { /*throw error ??*/ }
+
+                if( propertyTypeIsObject )
+                {
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Ldfld, p.GetGetMethod()/*PropertyType*/);//EmitDataMapper.Build(p.PropertyType, connectionStr, false));
+                }
 
                 il.Emit(OpCodes.Ldarg_1);
                 il.Emit(OpCodes.Ldstr, p.Name);
@@ -165,8 +176,13 @@ namespace SqlReflect
                          .Where(k => k.GetIndexParameters().Any() && k.GetIndexParameters()[0].ParameterType == typeof(string))     //find get_Item()
                          .Select(k => k.GetGetMethod()).First());   //get getmethod
 
+                if (propertyTypeIsObject)
+                    il.Emit(OpCodes.Callvirt, typeof(IDataMapper).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                        .Where(k => k.GetIndexParameters().Any() && k.GetIndexParameters()[0].ParameterType == typeof(object))
+                        .Select(k => k.GetGetMethod()).First());
+
                 if (p.PropertyType.IsPrimitive)
-                    il.Emit(OpCodes.Unbox_Any, p.PropertyType);    // CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    il.Emit(OpCodes.Unbox_Any, p.PropertyType);
                 else
                     il.Emit(OpCodes.Isinst, p.PropertyType);
 

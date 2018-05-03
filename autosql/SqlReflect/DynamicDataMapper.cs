@@ -20,6 +20,7 @@ namespace SqlReflect
             TableAttribute table = klass.GetCustomAttribute<TableAttribute>();
             if (table == null) throw new InvalidOperationException(klass.Name + " should be annotated with Table custom attribute !!!!");
 
+
             PropertyInfo pk = klass
                 .GetProperties()
                 .First(p => p.IsDefined(typeof(PKAttribute)));

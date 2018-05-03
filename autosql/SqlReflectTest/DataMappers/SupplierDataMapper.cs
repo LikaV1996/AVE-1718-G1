@@ -44,15 +44,15 @@ namespace SqlReflectTest.DataMappers
         {
             Supplier s = new Supplier();
             s.SupplierID = (int)dr["SupplierID"];
-            s.CompanyName = (string)dr["CompanyName"];
-            s.ContactName = (string)dr["ContactName"];
-            s.ContactTitle = (string)dr["ContactTitle"];
-            s.Address = (string)dr["Address"];
-            s.City = (string)dr["City"];
+            s.CompanyName = dr["CompanyName"] as string;
+            s.ContactName = dr["ContactName"] as string;
+            s.ContactTitle = dr["ContactTitle"] as string;
+            s.Address = dr["Address"] as string;
+            s.City = dr["City"] as string;
             s.Region = dr["Region"] as string;
-            s.PostalCode = (string)dr["PostalCode"];
-            s.Country = (string)dr["Country"];
-            s.Phone = (string)dr["Phone"];
+            s.PostalCode = dr["PostalCode"] as string;
+            s.Country = dr["Country"] as string;
+            s.Phone = dr["Phone"] as string;
             s.Fax = dr["Fax"] as string;
             return s;
         }

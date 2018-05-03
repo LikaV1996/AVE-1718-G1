@@ -70,6 +70,7 @@
     <Compile Include="Model\Employee.cs" />
     <Compile Include="Model\Shipper.cs" />
     <Compile Include="ProductDataMapperReflectTest.cs" />
+    <Compile Include="ProductEmitDataMapperTest.cs" />
     <Compile Include="ProductDataMapperTest.cs" />
     <Compile Include="Model\Category.cs" />
     <Compile Include="Model\Product.cs" />

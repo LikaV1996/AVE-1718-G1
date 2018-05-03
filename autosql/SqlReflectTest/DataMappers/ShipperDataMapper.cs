@@ -23,8 +23,8 @@ namespace SqlReflectTest.DataMappers
         {
             Shipper c = new Shipper();
             c.ShipperID = (int)dr["ShipperID"];
-            c.CompanyName = (string)dr["CompanyName"];
-            c.Phone = (string)dr["Phone"];
+            c.CompanyName = dr["CompanyName"] as string;
+            c.Phone = dr["Phone"] as string;
             return c;
         }
 

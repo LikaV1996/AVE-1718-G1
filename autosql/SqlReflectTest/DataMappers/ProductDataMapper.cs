@@ -58,7 +58,7 @@ namespace SqlReflectTest.DataMappers
         {
             Product p = new Product();
             p.ProductID = (int) dr["ProductID"];
-            p.ProductName = (string) dr["ProductName"];
+            p.ProductName = dr["ProductName"] as string;
             p.Supplier = (Supplier) suppliers.GetById(dr["SupplierID"]);
             p.Category = (Category) categories.GetById(dr["CategoryID"]);
             p.UnitsInStock = (short) dr["UnitsInStock"];

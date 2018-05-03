@@ -31,8 +31,8 @@ namespace SqlReflectTest.DataMappers
         {
             Category c = new Category();
             c.CategoryID = (int)dr["CategoryID"];
-            c.CategoryName = (string)dr["CategoryName"];
-            c.Description = (string)dr["Description"];
+            c.CategoryName = dr["CategoryName"] as string;
+            c.Description = dr["Description"] as string;
             return c;
         }
 
