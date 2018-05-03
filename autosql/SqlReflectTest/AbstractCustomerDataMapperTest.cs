@@ -90,16 +90,7 @@ namespace SqlReflectTest
             customers.Delete(actual);
             object res = customers.GetById(id);
             actual = res != null ? (Customer)res : default(Customer);
-            Assert.IsNull(actual.CompanyName);
-            Assert.IsNull(actual.ContactName);
-            Assert.IsNull(actual.ContactTitle);
-            Assert.IsNull(actual.Address);
-            Assert.IsNull(actual.City);
-            Assert.IsNull(actual.Region);
-            Assert.IsNull(actual.PostalCode);
-            Assert.IsNull(actual.Country);
-            Assert.IsNull(actual.Phone);
-            Assert.IsNull(actual.Fax);
+            Assert.IsNull(actual);
         }
 
         public void TestCustomerUpdate()
